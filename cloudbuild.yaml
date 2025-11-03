@@ -1,0 +1,42 @@
+steps:
+  # 1. Restore dependencies
+  # Use the official .NET 8 SDK image from Microsoft's container registry.
+  - name: 'mcr.microsoft.com/dotnet/sdk:8.0'
+    entrypoint: 'dotnet'
+    args: ['restore', '${_PROJECT_NAME}/${_PROJECT_NAME}.csproj']
+    id: 'restore'
+
+  # 2. Compile source code
+  # This step builds the project in Release configuration.
+  # The --no-restore flag is used because dependencies were restored in the previous step.
+  - name: 'mcr.microsoft.com/dotnet/sdk:8.0'
+    entrypoint: 'dotnet'
+    args:
+      - 'build'
+      - '${_PROJECT_NAME}/${_PROJECT_NAME}.csproj'
+      - '--configuration'
+      - 'Release'
+      - '--no-restore'
+    id: 'build'
+    waitFor: ['restore']
+
+  # 3. Execute unit tests
+  # This step runs tests. I've assumed your test project is in a directory
+  # named 'PSCourseLibrary.Tests'. You should adjust the path if it's different.
+  # The --no-build flag is used because the project was already built.
+  - name: 'mcr.microsoft.com/dotnet/sdk:8.0'
+    entrypoint: 'dotnet'
+    args:
+      - 'test'
+      - '${_PROJECT_NAME}.Tests/${_PROJECT_NAME}.Tests.csproj' # Uncomment and update if you have a test project
+      - '--configuration'
+      - 'Release'
+#      - '--no-build'
+    id: 'test'
+    waitFor: ['build']
+
+substitutions:
+  _PROJECT_NAME: CityInfo.API
+
+options:
+  logging: CLOUD_LOGGING_ONLY
