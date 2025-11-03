@@ -35,8 +35,29 @@ steps:
     id: 'test'
     waitFor: ['build']
 
+  # 4. Build the Docker image
+  # This step builds the Docker image using the Dockerfile in the project directory.
+  # The image is tagged with the Google Container Registry (GCR) path, project ID, and short commit SHA.
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA'
+      - '${_PROJECT_NAME}' # Assumes your Dockerfile is in the ${_PROJECT_NAME} directory
+    id: 'docker-build'
+    waitFor: ['test']
+
+  # 5. Push the Docker image to Google Container Registry
+  # This step pushes the tagged image to GCR.
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/${_PROJECT_NAME}:$SHORT_SHA']
+    id: 'docker-push'
+    waitFor: ['docker-build']
+
 substitutions:
   _PROJECT_NAME: CityInfo.API
+  _PROJECT_ID: vaulted-scholar-476714-g4
+  _SHORT_SHA: 1.0.0
 
 options:
   logging: CLOUD_LOGGING_ONLY
