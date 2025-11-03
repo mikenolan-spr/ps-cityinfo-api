@@ -47,7 +47,7 @@ steps:
       - 'Release'
       - '--no-restore'
       - '-o'
-      - './app/publish'
+      - './${_PROJECT_NAME}/app/publish'
     id: 'release'
     waitFor: ['test']
 
